@@ -31,6 +31,7 @@ class HistoricalData(ConfigUpdate):
         }
 
         response = fyers.history(data=data)
+        
         df = pd.DataFrame(response['candles'])
         df.columns = ['date','open','high','low','close','volume']
         df['date'] = pd.to_datetime(df['date'],unit='s')

@@ -23,7 +23,6 @@ class BollingerBreakout(HistoricalData):
             hist_data['ema_200'] = hist_data['close'].ewm(span=200,adjust=False).mean()
             number_of_days = int(len(hist_data)/75)
             for i in range(1,number_of_days):
-                
                 next_day            = hist_data.iloc[75*i:75*(i+1)]
                 first_candle_of_day = abs(next_day.iloc[0].high - next_day.iloc[0].low)
                 prev_day_close      = hist_data[75*(i-1):75*i].iloc[74].close

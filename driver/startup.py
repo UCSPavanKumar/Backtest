@@ -1,4 +1,4 @@
-mport yaml
+import yaml
 import sys
 fname = '/home/iob/algotrading/config/config.yaml'
 stream = open(fname,'r')
