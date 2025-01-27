@@ -5,6 +5,12 @@ __pycache__/
 # C extensions
 *.so
 
+<<<<<<< HEAD
+=======
+# CSV extensions
+*.csv
+
+>>>>>>> cbb8b8f (turtle trading)
 # Distribution / packaging
 bin/
 build/

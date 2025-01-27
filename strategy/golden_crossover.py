@@ -27,6 +27,12 @@ class GoldenCrossOver(HistoricalData):
             Symbols: datatype [list]
         """
         flag = None
+<<<<<<< HEAD
+=======
+        profits = []
+        qty = 100
+        turnover = 0
+>>>>>>> cbb8b8f (turtle trading)
         for symbol in symbols:
             try:
                 hist_data = HistoricalData().fetch_historical_data(symbol,from_date,to_date,resolution)
@@ -36,6 +42,7 @@ class GoldenCrossOver(HistoricalData):
                 hist_data['ema50']  = hist_data['ema50'].round(2)
                 for i in range(len(hist_data)):
                     if (float(hist_data.iloc[i].ema50) > float(hist_data.iloc[i].ema200) ) and (flag is None or flag =='SELL'):
+<<<<<<< HEAD
                         print("Buy {0} , Entry: {1} on {2}".format(symbol,hist_data.iloc[i].ema50,hist_data.iloc[i].date.strftime('%Y%m%d')))
                         flag = 'BUY'
                     elif (float(hist_data.iloc[i].ema200) > float(hist_data.iloc[i].ema50) ) and (flag is None or flag=='BUY'):
@@ -45,4 +52,20 @@ class GoldenCrossOver(HistoricalData):
                         pass 
             except Exception as e:
                 print(str(e))   
+=======
+                        print("Buy {0} , Entry: {1} on {2}".format(symbol,hist_data.iloc[i].close,hist_data.iloc[i].date.strftime('%Y%m%d')))
+                        turnover = 100*float(hist_data.iloc[i].close)
+                        flag = 'BUY'
+                    elif (float(hist_data.iloc[i].ema200) > float(hist_data.iloc[i].ema50) ) and (flag=='BUY'):
+                        print("Sell {0} , Entry: {1} on {2}".format(symbol,hist_data.iloc[i].close,hist_data.iloc[i].date.strftime('%Y%m%d')))
+                        flag='SELL'
+                        turnover = round((float(hist_data.iloc[i].close)*qty)-turnover,2)
+                        profits.append(turnover)
+                        turnover = 0
+                    else:
+                        pass 
+            except Exception as e:
+                print(str(e))
+            print(profits)   
+>>>>>>> cbb8b8f (turtle trading)
             return hist_data

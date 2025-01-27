@@ -14,7 +14,11 @@ class HistoricalData(ConfigUpdate):
             Symbol: Stock Symbol for fetching data NSE:SBIN-EQ
             date_from: format yyyy-mm-dd
             date_to: format yyyy-mm-dd
+<<<<<<< HEAD
             resolution: 1, 2, 3, 5, 10, 15, 20, 30, 45, 60, 120, 180, and 240 minutes
+=======
+            resolution: 1, 2, 3, 5, 10, 15, 20, 30, 45, 60, 120, 180, and 240 minutes,D,W,M
+>>>>>>> cbb8b8f (turtle trading)
 
         """
         fyers = fyersModel.FyersModel(client_id=self.retrieveClientId(),
@@ -31,7 +35,10 @@ class HistoricalData(ConfigUpdate):
         }
 
         response = fyers.history(data=data)
+<<<<<<< HEAD
         
+=======
+>>>>>>> cbb8b8f (turtle trading)
         df = pd.DataFrame(response['candles'])
         df.columns = ['date','open','high','low','close','volume']
         df['date'] = pd.to_datetime(df['date'],unit='s')
