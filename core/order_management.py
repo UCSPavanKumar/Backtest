@@ -27,14 +27,25 @@ class OrderManagement(ConfigUpdate):
     def fetchCurrentOverallPositions(self):
         """Fetch Running P&L"""
         response = self.fyers.positions()
-        return round(response['overall']['pl_total'],2)
+        if 'overall' in response.keys():
+            return round(response['overall']['pl_total'],2)
+        else:
+            return None
     
 
     def fetchIndividualTradePositions(self):
         """Fetching each Trade Positions"""
         row_txt = ''
         positions = self.fyers.positions()
-        for row in positions['netPositions']:
-            if row['unrealized_profit']!=0:
-                row_txt = row_txt+('Stock Name: {0}, Current Position: {1}'+'\n'+'---------------'+'\n').format(row['symbol'],round(row['pl'],2))
-        return row_txt
+        if 'netPositions' in positions.keys():
+            for row in positions['netPositions']:
+                if row['unrealized_profit']!=0:
+                    row_txt = row_txt+('Stock Name: {0}, Current Position: {1}'+'\n'+'---------------'+'\n').format(row['symbol'],round(row['pl'],2))
+            return row_txt
+        else:
+            return None
+        
+
+    def placeOrder(self,data):
+        response = self.fyers.place_order(data=data)
+        return response
