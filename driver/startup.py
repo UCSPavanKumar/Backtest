@@ -1,6 +1,6 @@
 import yaml
 import sys
-fname = '/home/iob/algotrading/config/config.yaml'
+fname = 'D:/Projects/Backtest/config/config.yaml'
 stream = open(fname,'r')
 data = yaml.safe_load(stream)
 data['auth_code'] = None

@@ -1,12 +1,12 @@
 import pandas as pd
 import sys
-sys.path.insert(1,r'/home/iob/algotrading')
-from backtest.historical_data import HistoricalData
+sys.path.insert(1,r'D:/Projects/Backtest')
+from data_management.historical_data import HistoricalData
 from strategy.golden_crossover import GoldenCrossOver
 
 @GoldenCrossOver.runStrategy
 def processdata(dates,resolution,symbols):
-        """ 
+        """
         Fetch data from fyers for the time frame and symbol with multiple date range.
         Args
             Symbols: datatype [list]

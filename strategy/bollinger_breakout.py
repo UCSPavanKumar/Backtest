@@ -2,8 +2,8 @@ from fyers_apiv3 import fyersModel
 import sys
 import pandas as pd
 import numpy as np
-sys.path.insert(1,r'/home/iob/algotrading')
-from backtest.historical_data import HistoricalData
+sys.path.insert(1,r'D:/Projects/Backtest')
+from data_management.historical_data import HistoricalData
 
 class BollingerBreakout(HistoricalData):
     def __init__(self):
@@ -16,9 +16,9 @@ class BollingerBreakout(HistoricalData):
         df['SMA'] = df['close'].rolling(window=20).mean()
         df['STD'] = df['close'].rolling(window=20).std()
         df['UB']  = df['SMA'] + (2*df['STD'])
-        df['LB']  = df['SMA'] -  (2*df['STD'])  
+        df['LB']  = df['SMA'] -  (2*df['STD'])
         return df
-    
+
     def rsi(self,df):
         """
         Finding 5 min TF RSI for the dataframe input
@@ -47,14 +47,14 @@ class BollingerBreakout(HistoricalData):
         if second_day_close<first_day_high and second_day_close>first_day_low and third_day_close<first_day_high and third_day_close>first_day_low:
              result = 'Y'
         return result
-    
+
 
     def runStrategy(self,dates,resolution,symbol):
-        """ 
+        """
         1. Checking for first 5 min candle of day with prev day close
         2. Day's Pct change over previous day candle
         3. 5 min high-low pct of previous day close
-        
+
         Args
             Symbols: datatype [list]
         """
@@ -72,9 +72,9 @@ class BollingerBreakout(HistoricalData):
                     dfs.append(data)
                 except Exception as e:
                     continue
-        
+
         if len(dfs)>0:
-                
+
                 hist_data = pd.concat(dfs)
                 dates = hist_data['dt_format'].unique()
                 dates.sort()
@@ -105,8 +105,8 @@ class BollingerBreakout(HistoricalData):
                     ub                  = float(h_data.iloc[0].UB)
                     lb                  = float(h_data.iloc[0].LB)
                     rsi                 = float(h_data.iloc[0].rsi)
-                    
-                    if (pct>0 and candle_diff>0) and first_candle_volume>500000 and rate>6 and day_high>first_candle_high and first_candle_close>nr3_df['high'].max():
+
+                    if (pct>0 and candle_diff>0)  and rate>6 and day_high>first_candle_high and first_candle_close>nr3_df['high'].max():
                         data_list.append(symbol)
                         data_list.append(first_candle_volume)
                         data_list.append(vol_sma)
@@ -120,49 +120,22 @@ class BollingerBreakout(HistoricalData):
                         data_list.append(rsi)
                         data_list.append(res)
                         result.append(data_list)
-                    # elif (pct<0 and candle_diff<0)  and first_candle_volume>500000 and rate>6 and day_low<first_candle_low and first_candle_close<nr3_df['low'].min() :
-                    #     data_list.append(symbol)
-                    #     data_list.append(first_candle_volume)
-                    #     data_list.append(vol_sma)
-                    #     data_list.append(rate)
-                    #     data_list.append(dates[i])
-                    #     data_list.append(prev_day_close)
-                    #     data_list.append(pct)
-                    #     data_list.append(closing_pct)
-                    #     data_list.append(ub)
-                    #     data_list.append(lb)
-                    #     data_list.append(rsi)
-                    #     data_list.append(res)
-                    #     result.append(data_list)
+                    elif (pct<0 and candle_diff<0)  and rate>6 and day_low<first_candle_low and first_candle_close<nr3_df['low'].min() :
+                        data_list.append(symbol)
+                        data_list.append(first_candle_volume)
+                        data_list.append(vol_sma)
+                        data_list.append(rate)
+                        data_list.append(dates[i])
+                        data_list.append(prev_day_close)
+                        data_list.append(pct)
+                        data_list.append(closing_pct)
+                        data_list.append(ub)
+                        data_list.append(lb)
+                        data_list.append(rsi)
+                        data_list.append(res)
+                        result.append(data_list)
                     else:
                          pass
         else:
              pass
-        # if len(result)>0:
-        #     df = pd.DataFrame(result,columns=['symbol','first_candle_volume','vol_sma','rate','date','prev_day_close','pct','closing_pct','ub','lb','rsi','nr3'])
-        #     df.to_csv('{0}.csv'.format(symbol))  
-        # else:
-        #      pass
-        #     next_day            = hist_data.iloc[75*i:75*(i+1)]
-        #     first_candle_of_day = abs(next_day.iloc[0].high - next_day.iloc[0].low)
-        #     prev_day_close      = hist_data[75*(i-1):75*i].iloc[74].close
-        #     pct_over_prev_close = round((first_candle_of_day/prev_day_close)*100,2)
-        #     next_day_close      = next_day.iloc[74].close
-        #     ema_200             = next_day.iloc[74].ema_200
-        #     row = []
-        #     row.append(next_day.iloc[74].date.strftime('%Y%m%d'))
-        #     row.append(symbol)
-        #     row.append(float(prev_day_close))
-        #     row.append(float(next_day_close))
-        #     row.append(float(pct_over_prev_close))
-        #     row.append(float(next_day.iloc[74].ema_200))
-            
-        #     if (next_day_close > prev_day_close):
-        #         pct_chg = round(((prev_day_close-next_day_close)/prev_day_close)*100,2) 
-        #     else:
-        #         pct_chg = -round(((prev_day_close-next_day_close)/prev_day_close)*100,2)
-        #     row.append(float(pct_chg))
-        #     backtest_data.append(row)
-        # print('Processing Done for {0}'.format(symbol))
-        # df_back = pd.DataFrame(backtest_data)
-        # df_back.columns = ['trade_date','symbol','prev_day_close','next_day_close','pct_over_prev_close','day_pct_chg','first_candle_200_ema']      
+        return result

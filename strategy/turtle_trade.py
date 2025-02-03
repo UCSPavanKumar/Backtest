@@ -2,8 +2,8 @@ from fyers_apiv3 import fyersModel
 import sys
 import logging
 import pandas as pd
-sys.path.insert(1,r'/home/iob/algotrading')
-from backtest.historical_data import HistoricalData
+sys.path.insert(1,r'D:/Projects/Backtest')
+from data_management.historical_data import HistoricalData
 logging.basicConfig(
     filename='algo.log',
     encoding='UTF-8',
@@ -18,7 +18,7 @@ class TurleTrade(HistoricalData):
         super().__init__()
 
     def runStrategy(self,dates,resolution,symbols):
-        """ 
+        """
         1. Entry when stock is breaking 40 day high
         2. Exit when breaking 20 day low
         Args
@@ -72,16 +72,16 @@ class TurleTrade(HistoricalData):
                             profits.append(turnover)
                             turnover = 0
                         else:
-                            pass 
+                            pass
                     if count%2 ==1:
                         profits.append(float(round((hist_data.iloc[len(hist_data)-1].close*qty)-turnover,2)))
                     else:
                         pass
                     print(profits)
                     total_profit = total_profit + sum(profits)
-                print("Total Profit: {0}".format(total_profit))   
+                print("Total Profit: {0}".format(total_profit))
                 return hist_data
             else:
-                pass    
+                pass
         except Exception as e:
             print(str(e))
