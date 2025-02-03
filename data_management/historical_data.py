@@ -109,7 +109,6 @@ class HistoricalData(ConfigUpdate):
         }
         try:
             response = fyers.history(data=data)
-            print(response) 
             df = pd.DataFrame(response['candles'])
             df.columns = ['date','open','high','low','close','volume']
             df['date'] = pd.to_datetime(df['date'],unit='s')
@@ -127,6 +126,7 @@ class HistoricalData(ConfigUpdate):
                 except Exception as e:
                     print(str(e))
             final_df = pd.concat(dfs)
+            #print(final_df)
             return final_df
         except Exception as e:
             return None

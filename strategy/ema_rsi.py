@@ -6,7 +6,7 @@ pd.set_option('chained_assignment',None)
 import numpy as np
 sys.path.insert(1,r'D:/Projects/Backtest')
 from constants import constants
-from time_management.dates import back_test_dates
+from time_management.dates import intraday_dates,back_test_dates
 from data_management.historical_data import HistoricalData
 from datetime import datetime,timedelta
 from collections import deque
@@ -22,8 +22,9 @@ logging.basicConfig(
 logger = logging.getLogger('algo')
 logger.setLevel(logging.DEBUG)
 class EmaRsi(HistoricalData):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,year):
+        self.year = year
+        super().__init__(year)
 
 
     def runStrategy(self,symbol):
@@ -45,14 +46,12 @@ class EmaRsi(HistoricalData):
             dfs = []
             total = []
             res = []
-            for year in range(2022,2023):
-                dates_1 = [dt.format(str(year)) for dt in back_test_dates]
-                total = total + dates_1
-            for row in total:
+            result = []
+            for row in intraday_dates:
                 try:
                     from_date = row.split('|')[0]
                     to_date   = row.split('|')[1]
-                    data      = HistoricalData().fetch_historical_data(symbol,from_date,to_date,'5')
+                    data      = HistoricalData(self.year).fetch_historical_data(symbol,from_date,to_date,'5')
                     data['symbol'] = symbol
                     dfs.append(data)
                 except Exception as e:
@@ -95,10 +94,8 @@ class EmaRsi(HistoricalData):
 
                         if df.iloc[idx1].volume < df.iloc[idx2].volume and \
                         df.iloc[idx2].volume < df.iloc[idx3].volume  and df.iloc[idx3].rsi<58:
-                            result  = 'Bullish Pattern Found for {0} at {1} with current percentage is {2} and RSI is {3}'.format(symbol, df.iloc[idx3].date,pct,df.iloc[idx3].rsi)
-                            res.append(symbol)
-                            res.append(result)
-                            result.append(res)
+                            #result  = 'Bullish Pattern Found for {0} at {1} with current percentage is {2} and RSI is {3}'.format(symbol, df.iloc[idx3].date,pct,df.iloc[idx3].rsi)
+                            res = [symbol,df.iloc[idx3].date,'BULLISH',float(pct)] 
 
                     elif df.iloc[idx1].close > df.iloc[idx1].open and \
                          df.iloc[idx2].close > df.iloc[idx2].open and \
@@ -106,14 +103,15 @@ class EmaRsi(HistoricalData):
                          df.iloc[idx3].close < df[:75]['low'].min() and pct<=-2 and df.iloc[idx3].high > df.iloc[idx3].ema20 :
                         if df.iloc[idx1].volume < df.iloc[idx2].volume and \
                         df.iloc[idx2].volume < df.iloc[idx3].volume and df.iloc[idx3].rsi>58 :
-                            result = 'Bearish Pattern Found for {0} at {1} with current percentage is {2}'.format(symbol, df.iloc[idx3].date, pct, df.iloc[idx3].rsi )
-                            res.append(symbol)
-                            res.append(result)
-                            result.append(res)
+                            #result = 'Bearish Pattern Found for {0} at {1} with current percentage is {2}'.format(symbol, df.iloc[idx3].date, pct, df.iloc[idx3].rsi )
+                            res = [symbol,df.iloc[idx3].date,'BEARISH',float(pct)] 
                     i = i+1
 
             else:
                 pass
         except Exception as e:
             print(str(e))
-        return result
+        if len(res)>0:
+            return res
+        else:
+            return None
