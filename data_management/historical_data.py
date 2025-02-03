@@ -103,12 +103,13 @@ class HistoricalData(ConfigUpdate):
             "symbol":symbol,
             "resolution": resolution,
             "date_format": "1",
-            "range_from": date_from.format(self.year),
-            "range_to": date_to.format(self.year),
+            "range_from": date_from,
+            "range_to": date_to,
             "cont_flag": "1"
         }
         try:
             response = fyers.history(data=data)
+            print(response) 
             df = pd.DataFrame(response['candles'])
             df.columns = ['date','open','high','low','close','volume']
             df['date'] = pd.to_datetime(df['date'],unit='s')
@@ -129,3 +130,5 @@ class HistoricalData(ConfigUpdate):
             return final_df
         except Exception as e:
             return None
+           
+            

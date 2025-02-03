@@ -11,7 +11,7 @@ if __name__ == '__main__':
     from pandas.errors import SettingWithCopyWarning
     warnings.simplefilter(action='ignore', category=FutureWarning)
     warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
-    sys.path.insert(1,r'D:/Projects/Backtest')
+    sys.path.insert(1,r'/home/ec2-user/Backtest')
     from analytics.analytics import Analytics
     from constants import constants
     from strategy.pivot_points import PivotPoint
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         futures = []
         for symbol in constants.nifty_50_symbols:
-            futures.append(executor.submit(PivotPoint(400000,2023).run, symbol))
+            futures.append(executor.submit(PivotPoint(400000,2025).run, symbol))
         for future in as_completed(futures):
             if future.result() is not None:
                 df = pd.DataFrame(future.result(),columns=['Symbol','Date','PnL'])

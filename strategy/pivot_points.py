@@ -55,11 +55,11 @@ class PivotPoint:
         dates.sort()
         target = 0
         sl=0
-        for i in range(3,len(dates)-1):
+        for i in range(0,len(dates)-1):
             prev_df = final_df[final_df['dt_time']==dates[i]]
             df = final_df[final_df['dt_time']==dates[i+1]]
             day_high = df['high'].max()
-            result  = Indicators().nr3(final_df,[dates[i-3],dates[i-2],dates[i-1]])
+            #result  = Indicators().nr3(final_df,[dates[i-3],dates[i-2],dates[i-1]])
             pivot,r1,s1,r2,s2,r3,s3 = Indicators().pivotpoints(prev_df['high'].max(),prev_df['low'].min(),prev_df['close'].iloc[-1])
             first_candle_close = float(df['close'].iloc[0])
             first_candle_open = float(df['open'].iloc[0])
@@ -119,12 +119,12 @@ class PivotPoint:
         dates.sort()
         target = 0
         sl=0
-        for i in range(3,len(dates)-1):
+        for i in range(0,len(dates)-1):
             prev_df = final_df[final_df['dt_time']==dates[i]]
             df = final_df[final_df['dt_time']==dates[i+1]]
             day_high = df['high'].max()
             day_low = df['low'].min()
-            result  = Indicators().nr3(final_df,[dates[i-3],dates[i-2],dates[i-1]])
+            #result  = Indicators().nr3(final_df,[dates[i-3],dates[i-2],dates[i-1]])
             pivot,r1,s1,r2,s2,r3,s3 = Indicators().pivotpoints(prev_df['high'].max(),prev_df['low'].min(),prev_df['close'].iloc[-1])
             first_candle_close = float(df['close'].iloc[0])
             first_candle_open = float(df['open'].iloc[0])
@@ -132,7 +132,7 @@ class PivotPoint:
             first_candle_volume = df['volume'].iloc[0]
             pct = ((first_candle_close-prev_df['close'].iloc[-1])/prev_df['close'].iloc[-1])*100
             rate = first_candle_volume/df['vol_smav'].iloc[0]
-            if (first_candle_close<first_candle_open) and (first_candle_close < s1) and (first_candle_close - s1)<0  and day_low<first_candle_low and rate>4  and df['rsi'].iloc[0]>20 and df['rsi'].iloc[0]<30:
+            if (first_candle_close<first_candle_open) and (first_candle_close < s1) and (first_candle_close - s1)<0  and day_low>first_candle_low and rate>4  and df['rsi'].iloc[0]>20 and df['rsi'].iloc[0]<30:
                 flag=None
                 for j in range(2,len(df)):
                     if df['close'].iloc[j]<first_candle_low and (flag is None or flag=='BUY'):
@@ -178,20 +178,24 @@ class PivotPoint:
     def run(self,symbol):
         dfs = []
         print('Processing symbol: {0}'.format(symbol))
-        for dates in back_test_dates:
+        for dates in intraday_dates:
             data = HistoricalData(year=self.year).fetch_historical_data(symbol,dates.split('|')[0],dates.split('|')[1],'5')
-            if data is None:
-                continue
-            dfs.append(data)
-        final_df = pd.concat(dfs)
-        dates = final_df['dt_time'].unique()
-        dates.sort()
-        final_df = Indicators().rsi(final_df)
-        final_df['vol_smav'] = final_df['volume'].rolling(window=20).mean()
-        self.buy(final_df,symbol)
-        #self.sell(final_df,symbol)
-        #self.showAnalysis(symbol)
-        return self.trades
+            if data is not None and len(data)>20:     
+                dfs.append(data)
+            else:
+                pass
+        if len(dfs)>0:
+            final_df = pd.concat(dfs)
+            dates = final_df['dt_time'].unique()
+            dates.sort()
+            final_df = Indicators().rsi(final_df)
+            final_df['vol_smav'] = final_df['volume'].rolling(window=20).mean()
+            self.buy(final_df,symbol)
+            self.sell(final_df,symbol)
+            #self.showAnalysis(symbol)
+            return self.trades
+        else:
+            return None
 
 
     def showAnalysis(self,symbol):
