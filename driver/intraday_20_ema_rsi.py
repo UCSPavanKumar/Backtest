@@ -32,10 +32,16 @@ if __name__ == '__main__':
     dfs = []
 
     start  = time.time()
+    if sys.argv[1] == '50':
+        symbols = constants.nifty_50_symbols
+    elif sys.argv[1]=='500':
+        symbols = constants.nifty_500_symbols
+    elif sys.argv[1]=='fo':
+        symbols = constants.fo_symbols
 
     with ProcessPoolExecutor(max_workers=4) as executor:
         futures = []
-        for symbol in constants.fo_symbols:
+        for symbol in symbols:
             futures.append(executor.submit(EmaRsi(2025).runStrategy, symbol))
         for future in as_completed(futures):
             if future.result() is not None:

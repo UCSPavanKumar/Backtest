@@ -48,7 +48,7 @@ if __name__ == '__main__':
     with ProcessPoolExecutor(max_workers=3) as executor:
         futures = []
         for symbol in symbols:
-            futures.append(executor.submit(PivotPoint(100000,2025).run, symbol))
+            futures.append(executor.submit(PivotPoint(50000,2025).run, symbol))
         for future in as_completed(futures):
             if future.result() is not None:
                 df = pd.DataFrame(future.result(),columns=['symbol','Date','entry','pattern','qty','target','sl'])
@@ -100,7 +100,7 @@ if __name__ == '__main__':
                 response['message']
         i=0
 
-        if len(order_ids)>0  and order.:
+        if len(order_ids)>0  and len(order.fetchPendingOrders()):
             while True:
                 if len(order_ids)>0:
                     for i in range(len(order_ids)):

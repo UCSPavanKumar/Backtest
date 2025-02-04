@@ -79,9 +79,9 @@ class EmaRsi(HistoricalData):
                     idx2 = 74+i
                     idx3 = 75+i
                     idx4 = 76+i
-                    if df.iloc[idx4].close > df.iloc[idx3].close and df.iloc[idx3].close > df.iloc[idx2].close and df.iloc[idx2].close > df.iloc[idx1].close and flag==None:
+                    if df.iloc[idx4].close > df.iloc[idx3].close and df.iloc[idx3].close > df.iloc[idx2].close and df.iloc[idx2].close > df.iloc[idx1].close and df.iloc[idx1].close>df.iloc[idx1-1].high and flag==None:
                         flag = 'Y'
-                    elif df.iloc[idx4].close < df.iloc[idx3].close and df.iloc[idx3].close < df.iloc[idx2].close and df.iloc[idx2].close < df.iloc[idx1].close and flag==None:
+                    elif df.iloc[idx4].close < df.iloc[idx3].close and df.iloc[idx3].close < df.iloc[idx2].close and df.iloc[idx2].close < df.iloc[idx1].close and df.iloc[idx1].close<df.iloc[idx1-1].low and flag==None:
                         flag = 'Y'
                     else:
                         pass

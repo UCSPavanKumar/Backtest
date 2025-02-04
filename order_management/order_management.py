@@ -12,7 +12,7 @@ class OrderManagement(ConfigUpdate):
     def fetchPendingOrders(self):
         """Fetching all pending orders in trading account"""
         orders = self.fyers.orderbook()
-        return orders
+        return orders['orderBook']
 
     def cancelAllPendingOrders(self):
         """Cancellation of all Pending Orders"""
