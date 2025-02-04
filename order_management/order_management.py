@@ -46,7 +46,12 @@ class OrderManagement(ConfigUpdate):
             return None
 
 
-    def placeOrder(self,data):
+    def placeSingleOrder(self,data):
         """Placing SL-M orders for Intraday Trades"""
         response = self.fyers.place_order(data=data)
+        return response
+
+    def placeMultiOrder(self,data):
+        """placing basket orders"""
+        response = self.fyers.place_basket_orders(data=data)
         return response

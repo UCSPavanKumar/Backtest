@@ -32,7 +32,7 @@ trades = []
 
 
 processes = []
-capital = 400000
+capital = 100000
 stoploss    = 0.005
 risk_per_trade = 0.01
 reward_per_trade = 0.02
@@ -41,6 +41,7 @@ commisions = [0]
 trades = []
 class PivotPoint:
     def __init__(self,capital,year):
+       
         self.year = year
         self.stoploss = 0.05
         self.risk_per_trade = 0.01
@@ -68,43 +69,10 @@ class PivotPoint:
             pct = ((first_candle_close-prev_df['close'].iloc[-1])/prev_df['close'].iloc[-1])*100
             rate = first_candle_volume/df['vol_smav'].iloc[0]
             if (first_candle_close>first_candle_open) and (first_candle_close > r1) and (first_candle_close - r1)>0  and day_high>first_candle_high and rate>4  and df['rsi'].iloc[0]>60 and df['rsi'].iloc[0]<70:
-                flag=None
-                for j in range(2,len(df)):
-                    if df['close'].iloc[j]>first_candle_high and (flag is None or flag=='SELL'):
-                        flag='BUY'
-                        sl = (first_candle_high*(1-stoploss))
-                        print('Buy Signal for %s first 5 min candle high %.2f,r1:%.2f ,pct change: %.2f,sl:%.2f,rate:%.2f for date: %s'%(symbol,first_candle_high,r1,pct,sl,rate,dates[i+1]))
-                        qty = int((capital*risk_per_trade)/(first_candle_high*stoploss))
-                        target =first_candle_high+float((2*(first_candle_high-sl)))
-                        print('Target: %.2f,Stoploss: %.2f'%(target,sl))
-                        buy_turnover = qty*first_candle_high
-                    elif df['high'].iloc[j]>target and flag=='BUY':
-                        flag='SELL'
-                        sell_turnover = qty*target
-                        self.commisions.append(round(float(Brokerage().calculate_commission(buy_turnover,sell_turnover)),2))
-                        self.capital = capital + float((qty*(target-first_candle_high))) - float(Brokerage().calculate_commission(buy_turnover,sell_turnover))
-                        self.capital_movement.append(round(float(capital),2))
-                        self.trades.append([symbol,dates[i+1],float((qty*(target-first_candle_high))) - float(Brokerage().calculate_commission(buy_turnover,sell_turnover))])
-                        print('Target achieved at %.2f for %s on date %s'%(target,symbol,df['date'].iloc[j]))
-                        break
-                    if df['low'].iloc[j]<sl and flag=='BUY':
-                        flag='SELL'
-                        sell_turnover = qty*sl
-                        self.capital = capital + float((qty*(sl-first_candle_high)))- float(Brokerage().calculate_commission(buy_turnover,sell_turnover))
-                        self.trades.append([symbol,dates[i+1],float((qty*(sl-first_candle_high))) - float(Brokerage().calculate_commission(buy_turnover,sell_turnover))])
-                        self.commisions.append(round(float(Brokerage().calculate_commission(buy_turnover,sell_turnover)),2))
-                        self.capital_movement.append(round(float(capital),2))
-                        print('Stoploss hit : %.2f for %s on date %s'%(sl,symbol,df['date'].iloc[j]))
-                        break
-                if flag=='BUY':
-                    print('Square off at %.2f for %s on date %s'%(df['close'].iloc[-1],symbol,df['date'].iloc[j]))
-                    sell_turnover = qty*df['close'].iloc[-1]
-                    self.capital = capital + float((qty*(df['close'].iloc[-1]-first_candle_high))) -Brokerage().calculate_commission(buy_turnover,sell_turnover)
-                    self.trades.append([symbol,dates[i+1],float((qty*(df['close'].iloc[-1]-first_candle_high))) - float(Brokerage().calculate_commission(buy_turnover,sell_turnover))])
-                    self.commisions.append(round(float(Brokerage().calculate_commission(buy_turnover,sell_turnover)),2))
-                    self.capital_movement.append(round(capital,2))
-                else:
-                    pass
+                sl = round((first_candle_high*(1-stoploss))*20)/20
+                qty = int((capital*risk_per_trade)/abs(first_candle_high-sl))
+                target =round((first_candle_high+float((2*(first_candle_high-sl))))*20)/20
+                self.trades.append([symbol,dates[i+1],round(first_candle_high*20)/20,'BULLISH',qty,target,sl])
 
             else:
                 pass
@@ -133,44 +101,10 @@ class PivotPoint:
             pct = ((first_candle_close-prev_df['close'].iloc[-1])/prev_df['close'].iloc[-1])*100
             rate = first_candle_volume/df['vol_smav'].iloc[0]
             if (first_candle_close<first_candle_open) and (first_candle_close < s1) and (first_candle_close - s1)<0  and day_low>first_candle_low and rate>4  and df['rsi'].iloc[0]>20 and df['rsi'].iloc[0]<30:
-                flag=None
-                for j in range(2,len(df)):
-                    if df['close'].iloc[j]<first_candle_low and (flag is None or flag=='BUY'):
-                        flag='SELL'
-                        sl = (first_candle_low*(1+stoploss))
-                        print('Short Signal for %s first 5 min candle low %.2f,s1:%.2f ,pct change: %.2f,sl:%.2f,rate:%.2f for date: %s'%(symbol,first_candle_low,s1,pct,sl,rate,dates[i+1]))
-                        qty = int((capital*risk_per_trade)/(first_candle_low*stoploss))
-                        target =first_candle_low-float((2*abs(first_candle_low-sl)))
-                        print('Target: %.2f,Stoploss: %.2f'%(target,sl))
-                        sell_turnover = qty*first_candle_low
-                    elif df['low'].iloc[j]<target and flag=='SELL':
-                        flag='BUY'
-                        buy_turnover = qty*target
-                        self.commisions.append(round(float(Brokerage().calculate_commission(buy_turnover,sell_turnover)),2))
-                        self.capital = capital + float((qty*(target-first_candle_low))) - float(Brokerage().calculate_commission(buy_turnover,sell_turnover))
-                        self.capital_movement.append(round(float(capital),2))
-                        self.trades.append([symbol,dates[i+1],float((qty*(target-first_candle_low))) - float(Brokerage().calculate_commission(buy_turnover,sell_turnover))])
-                        print('Target achieved at %.2f for %s on date %s'%(target,symbol,df['date'].iloc[j]))
-                        break
-                    if df['high'].iloc[j]>sl and flag=='SELL':
-                        flag='BUY'
-                        buy_turnover = qty*sl
-                        self.capital = capital + float((qty*(sl-first_candle_low)))- float(Brokerage().calculate_commission(buy_turnover,sell_turnover))
-                        self.trades.append([symbol,dates[i+1],float((qty*(sl-first_candle_low))) - float(Brokerage().calculate_commission(buy_turnover,sell_turnover))])
-                        self.commisions.append(round(float(Brokerage().calculate_commission(buy_turnover,sell_turnover)),2))
-                        self.capital_movement.append(round(float(capital),2))
-                        print('Stoploss hit : %.2f for %s on date %s'%(sl,symbol,df['date'].iloc[j]))
-                        break
-                if flag=='SELL':
-                    print('Square off at %.2f for %s on date %s'%(df['close'].iloc[-1],symbol,df['date'].iloc[j]))
-                    buy_turnover = qty*df['close'].iloc[-1]
-                    self.capital = capital + float((qty*(df['close'].iloc[-1]-first_candle_low))) -Brokerage().calculate_commission(buy_turnover,sell_turnover)
-                    self.trades.append([symbol,dates[i+1],float((qty*(df['close'].iloc[-1]-first_candle_low))) - float(Brokerage().calculate_commission(buy_turnover,sell_turnover))])
-                    self.commisions.append(round(float(Brokerage().calculate_commission(buy_turnover,sell_turnover)),2))
-                    self.capital_movement.append(round(capital,2))
-                else:
-                    pass
-
+                sl = round((first_candle_high*(1+stoploss))*20)/20
+                qty = int((capital*risk_per_trade)/abs(first_candle_low-sl))
+                target =round((first_candle_high+float((2*(sl-first_candle_low))))*20)/20     
+                self.trades.append([symbol,dates[i+1],round(first_candle_low*20)/20,'BEARISH',qty,target,sl])
             else:
                 pass
 

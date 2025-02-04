@@ -14,4 +14,4 @@ back_test_dates = ['{0}-01-01|{0}-01-31',
                     '{0}-12-01|{0}-12-31',
           ]
 
-intraday_dates = [(datetime.now()+timedelta(days=-10)).strftime('%Y-%m-%d')+'|'+(datetime.now()+timedelta(days=0)).strftime('%Y-%m-%d')]
+intraday_dates = [(datetime.now()+timedelta(days=-3)).strftime('%Y-%m-%d')+'|'+(datetime.now()+timedelta(days=0)).strftime('%Y-%m-%d')]

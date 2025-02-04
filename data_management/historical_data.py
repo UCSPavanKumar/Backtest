@@ -126,7 +126,6 @@ class HistoricalData(ConfigUpdate):
                 except Exception as e:
                     print(str(e))
             final_df = pd.concat(dfs)
-            #print(final_df)
             return final_df
         except Exception as e:
             return None
