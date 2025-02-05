@@ -41,6 +41,7 @@ if __name__ == '__main__':
 
     with ProcessPoolExecutor(max_workers=4) as executor:
         futures = []
+        symbols.sort()
         for symbol in symbols:
             futures.append(executor.submit(EmaRsi(2025).runStrategy, symbol))
         for future in as_completed(futures):
@@ -48,8 +49,9 @@ if __name__ == '__main__':
                 dfs.append(future.result())
     
     end = time.time()
+    print('---------------------------------------------')
     print('total time taken for completion of script %.2f'%(end-start))
-
+    print('----------------------------------------------')
     trade_df = pd.DataFrame(dfs,columns=['symbol','date','pattern','pct'])
     print(trade_df)
 

@@ -121,7 +121,11 @@ class HistoricalData(ConfigUpdate):
                 try:
                     temp_df = df[df['dt_time']==dt]
                     len_df = len(temp_df)
-                    temp_df['date']= self.get_dates_index(dt,len_df)
+                    if len_df>75:
+                        temp_df = temp_df.loc[75:149]
+                        temp_df['date']= self.get_dates_index(dt,75)
+                    else:
+                        temp_df['date']= self.get_dates_index(dt,len_df)
                     dfs.append(temp_df)
                 except Exception as e:
                     print(str(e))
