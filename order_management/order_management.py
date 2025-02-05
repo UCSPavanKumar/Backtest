@@ -8,11 +8,22 @@ class OrderManagement(ConfigUpdate):
                            is_async = False,
                            log_path='')
 
+    def prepareOrder(self,**kwargs):
+        """Prepare dict for bullish and bearish entry,SL,target order"""
+        data = {
+            
+        }
+
+    def getOrderBookById(self,order_id):
+        data = {"id":order_id}
+
+        response = self.fyers.orderbook(data=data)
+        return response
 
     def fetchPendingOrders(self):
         """Fetching all pending orders in trading account"""
         orders = self.fyers.orderbook()
-        return orders['orderBook']
+        return orders
 
     def cancelAllPendingOrders(self):
         """Cancellation of all Pending Orders"""
@@ -31,6 +42,39 @@ class OrderManagement(ConfigUpdate):
             return round(response['overall']['pl_total'],2)
         else:
             return None
+
+    def prepareOrder(self,*args,flag,qty,order_side,symbol,stop_price,side,limit_price):
+        if args['flag'] =='BULLISH' and args['order_type']=='Limit':
+            data = {
+                                    "symbol": args['symbol'],
+                                    "qty":args['qty'],
+                                    "type":1,
+                                    "side":-1,
+                                    "productType":"INTRADAY",
+                                    "limitPrice":args['limit_price'],
+                                    "stopPrice":0,
+                                    "validity":"DAY",
+                                    "disclosedQty":0,
+                                    "offlineOrder":False,
+                                    "orderTag":args['tag']
+                                        }
+        elif args['flag'] =='BULLISH' and args['order_type']=='SL':
+            data = {
+                                    "symbol": args['symbol'],
+                                    "qty":args['qty'],
+                                    "type":1,
+                                    "side":-1,
+                                    "productType":"INTRADAY",
+                                    "limitPrice":args['limit_price'],
+                                    "stopPrice":0,
+                                    "validity":"DAY",
+                                    "disclosedQty":0,
+                                    "offlineOrder":False,
+                                    "orderTag":args['tag']
+                                        }
+                
+
+
 
 
     def fetchIndividualTradePositions(self):
@@ -55,3 +99,4 @@ class OrderManagement(ConfigUpdate):
         """placing basket orders"""
         response = self.fyers.place_basket_orders(data=data)
         return response
+

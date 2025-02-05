@@ -3,6 +3,136 @@
 
 processes = []
 
+
+
+def log_result(result):
+    """this is called whenever PivotPoint.run,returns
+        a result.trades list is modified by main process,not the pool workers
+    """
+    if result is not None:
+        if len(result)>0 and result is not None:
+            trades.append(result)
+        else:
+            pass
+    else:
+        pass
+
+
+
+def fyers_order(trade_df):
+    """Preparing entry,sl,target order for execution of strategy"""
+    if len(trade_df)>0:
+        order = OrderManagement()
+        order_ids = {}
+        for i in range(len(trade_df)): 
+            if trade_df.iloc[i].pattern =='BULLISH': 
+                data_entry = {
+                "symbol":trade_df.iloc[i].symbol,
+                "qty":trade_df.iloc[i].qty,
+                "type":3,
+                "side":1,
+                "productType":"INTRADAY",
+                "limitPrice":0,
+                "stopPrice":trade_df.iloc[i].entry,
+                "validity":"DAY",
+                "disclosedQty":0,
+                "offlineOrder":False,
+                "orderTag":"intradaypivot"
+                    }
+                data_sl = {
+                "symbol":trade_df.iloc[i].symbol,
+                "qty":trade_df.iloc[i].qty,
+                "type":3,
+                "side":0,
+                "productType":"INTRADAY",
+                "limitPrice":0,
+                "stopPrice":trade_df.iloc[i].sl,
+                "validity":"DAY",
+                "disclosedQty":0,
+                "offlineOrder":False,
+                "orderTag":"intradaypivot"
+                    }
+                
+                data_target = {
+                "symbol":trade_df.iloc[i].symbol,
+                "qty":trade_df.iloc[i].qty,
+                "type":1,
+                "side":0,
+                "productType":"INTRADAY",
+                "limitPrice":trade_df.iloc[i].target,
+                "stopPrice":0,
+                "validity":"DAY",
+                "disclosedQty":0,
+                "offlineOrder":False,
+                "orderTag":"intradaypivot"
+                    }
+            elif trade_df.iloc[i].pattern =='BEARISH': 
+                data_entry = {
+                "symbol":trade_df.iloc[i].symbol,
+                "qty":trade_df.iloc[i].qty,
+                "type":3,
+                "side":1,
+                "productType":"INTRADAY",
+                "limitPrice":0,
+                "stopPrice":trade_df.iloc[i].entry,
+                "validity":"DAY",
+                "disclosedQty":0,
+                "offlineOrder":False,
+                "orderTag":"intradaypivot"
+                    }
+                data_sl = {
+                "symbol":trade_df.iloc[i].symbol,
+                "qty":trade_df.iloc[i].qty,
+                "type":3,
+                "side":1,
+                "productType":"INTRADAY",
+                "limitPrice":0,
+                "stopPrice":trade_df.iloc[i].sl,
+                "validity":"DAY",
+                "disclosedQty":0,
+                "offlineOrder":False,
+                "orderTag":"intradaypivot"
+                    }
+                
+                data_target = {
+                "symbol":trade_df.iloc[i].symbol,
+                "qty":trade_df.iloc[i].qty,
+                "type":1,
+                "side":0,
+                "productType":"INTRADAY",
+                "limitPrice":trade_df.iloc[i].target,
+                "stopPrice":0,
+                "validity":"DAY",
+                "disclosedQty":0,
+                "offlineOrder":False,
+                "orderTag":"intradaypivot"
+                    }
+            
+            response = order.placeSingleOrder(data=data_entry)
+            print(response)
+            if response['s']=='ok':
+                order_ids[response['id']] = [data_sl,data_target]
+            else:
+                response['message']
+        i=0
+
+        if len(order_ids.keys())>0  and len(order.fetchPendingOrders())==0:
+            while True:
+                for i in range(len(order_ids.keys())):
+                    response = order.getOrderBookById(order_ids.keys()[i])
+                    if response['s']=='ok':
+                        data = response['orderbook'][0]
+                        if data['status'] == 2 :
+                            
+                            response = order.placeMultiOrder(data=order_ids[order_ids.keys()[i]])
+                            if response['s'] == 'ok':
+                                order_ids.pop(order_ids.keys()[i])
+                            else:
+                                print('Target and SL order placement error: %s'%response['message'])
+                    else:
+                        print(response['message'])
+
+
 if __name__ == '__main__':
     import sys
     import warnings
@@ -26,14 +156,15 @@ if __name__ == '__main__':
     import time
     pd.set_option('display.max_columns', None)
     import numpy as np
-    trade = TradeLogin()
-    trade.login()
-    trades = []
+    trades = [] 
     dfs = []
     cu = ConfigUpdate()
     token = cu.retrieveAccessToken()
     if token is None:
+        trade.login()
         sys.exit(0) 
+    else:
+       pass 
 
     start = time.time()
     sym_flag = sys.argv[1]
@@ -47,126 +178,24 @@ if __name__ == '__main__':
 
     with ProcessPoolExecutor(max_workers=3) as executor:
         futures = []
-        for symbol in symbols:
-            futures.append(executor.submit(PivotPoint(50000,2025).run, symbol))
+        for symbol in symbols: 
+            futures.append(executor.submit(PivotPoint(100000,2025).run, symbol))
+            time.sleep(1)
         for future in as_completed(futures):
             if future.result() is not None:
                 df = pd.DataFrame(future.result(),columns=['symbol','Date','entry','pattern','qty','target','sl'])
                 trades.append(df)
     end = time.time()
+    print('------------------------------------------')
     print('Time taken for completion of script %.2f'%(end-start))
+    print('------------------------------------------')
     trade_df = pd.concat(trades)
-    print(trade_df)
     trade_df = trade_df[trade_df['Date']==(datetime.now()+timedelta(days=0)).strftime('%Y-%m-%d')]
-    if len(trade_df)>0:
-        print(trade_df)
-        order = OrderManagement()
-        trades_list = [] 
-        order_ids = []
-        for i in range(len(trade_df)): 
-            if trade_df.iloc[i].pattern =='BULLISH': 
-                data = {
-                "symbol":trade_df.iloc[i].symbol,
-                "qty":trade_df.iloc[i].qty,
-                "type":3,
-                "side":1,
-                "productType":"INTRADAY",
-                "limitPrice":0,
-                "stopPrice":trade_df.iloc[i].entry,
-                "validity":"DAY",
-                "disclosedQty":0,
-                "offlineOrder":False,
-                "orderTag":"intradaypivot"
-                    }
-            else:
-                data = {
-                "symbol":trade_df.iloc[i].symbol,
-                "qty":10,
-                "type":3,
-                "side":0,
-                "productType":"INTRADAY",
-                "limitPrice":0,
-                "stopPrice":trade_df.iloc[i].entry,
-                "validity":"DAY",
-                "disclosedQty":0,
-                "offlineOrder":False,
-                "orderTag":"intradaypivot"
-                    }
-            response = order.placeSingleOrder(data=data)
-            print(response) 
-            if response['s']=='ok':
-                order_ids.append(response['id'])
-            else:
-                response['message']
-        i=0
+    print(trade_df) 
+    fyers_order(trade_df)
 
-        if len(order_ids)>0  and len(order.fetchPendingOrders()):
-            while True:
-                if len(order_ids)>0:
-                    for i in range(len(order_ids)):
-                        response = order.getOrderBookById(order_ids[i])
-                        if response['s']=='ok':
-                            data = response['orderbook'][0]
-                            if data['status'] == 2 and data['side']==1:
-                                order_ids.pop(order_ids[i])
-                                #placing SL order
-                                data_1 = {
-                                    "symbol":trade_df.iloc[i].symbol,
-                                    "qty":data['qty'],
-                                    "type":3,
-                                    "side":-1,
-                                    "productType":"INTRADAY",
-                                    "limitPrice":0,
-                                    "stopPrice":trade_df.iloc[i].sl,
-                                    "validity":"DAY",
-                                    "disclosedQty":0,
-                                    "offlineOrder":False,
-                                    "orderTag":"intradaypivot"
-                                        }
-                                #placing target order
-                                data_2 = {
-                                    "symbol":trade_df.iloc[i].symbol,
-                                    "qty":data['qty'],
-                                    "type":1,
-                                    "side":-1,
-                                    "productType":"INTRADAY",
-                                    "limitPrice":trade_df.iloc[i].target,
-                                    "stopPrice":0,
-                                    "validity":"DAY",
-                                    "disclosedQty":0,
-                                    "offlineOrder":False,
-                                    "orderTag":"intradaypivot"
-                                        } 
-                                response = order.placeMultiOrder(data=[data_1,data_2])
-                            elif  data['status'] == 2 and data['side']==-1:
-                                order_ids.pop(order_ids[i])
-                                data_1 = {
-                                    "symbol":trade_df.iloc[i].symbol,
-                                    "qty":data['qty'],
-                                    "type":3,
-                                    "side":1,
-                                    "productType":"INTRADAY",
-                                    "limitPrice":0,
-                                    "stopPrice":trade_df.iloc[i].sl,
-                                    "validity":"DAY",
-                                    "disclosedQty":0,
-                                    "offlineOrder":False,
-                                    "orderTag":"intradaypivot"
-                                        }
-                                data_2 = {
-                                    "symbol":trade_df.iloc[i].symbol,
-                                    "qty":data['qty'],
-                                    "type":3,
-                                    "side":1,
-                                    "productType":"INTRADAY",
-                                    "limitPrice":trade_df.iloc[i].target,
-                                    "stopPrice":0,
-                                    "validity":"DAY",
-                                    "disclosedQty":0,
-                                    "offlineOrder":False,
-                                    "orderTag":"intradaypivot"
-                                        } 
-                                response = order.placeMultiOrder(data=[data_1,data_2]) 
+    
+    
 
 
             
@@ -179,6 +208,7 @@ if __name__ == '__main__':
     # print('Drawdown:%.2f'%analytics.draw_down())
     # print('Sharpe Ratio:%.2f'%analytics.sharpe_ratio(0.05,0.01,0.12))
     # print('Returns:%.2f'%analytics.calculate_returns())
+
 
 
 
