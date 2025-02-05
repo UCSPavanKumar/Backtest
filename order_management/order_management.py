@@ -11,8 +11,19 @@ class OrderManagement(ConfigUpdate):
     def prepareOrder(self,**kwargs):
         """Prepare dict for bullish and bearish entry,SL,target order"""
         data = {
-            
-        }
+                    "symbol":kwargs['symbol'],
+                    "qty":kwargs['qty'],
+                    "type":kwargs['type'],
+                    "side":kwargs['side'],
+                    "productType":"INTRADAY",
+                    "limitPrice":kwargs['limit_price'],
+                    "stopPrice":kwargs['sl'],
+                    "validity":"DAY",
+                    "disclosedQty":0,
+                    "offlineOrder":False,
+                    "orderTag":"intradaypivot"
+                }
+        return data
 
     def getOrderBookById(self,order_id):
         data = {"id":order_id}
@@ -72,7 +83,7 @@ class OrderManagement(ConfigUpdate):
                                     "offlineOrder":False,
                                     "orderTag":args['tag']
                                         }
-                
+
 
 
 
