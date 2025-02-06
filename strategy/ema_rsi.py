@@ -39,7 +39,6 @@ class EmaRsi(HistoricalData):
         """
         flag = None
         dfs = []
-        print('Processing for symbol:',symbol)
         hist_data = pd.DataFrame()
         try:
             hist_data = pd.DataFrame()

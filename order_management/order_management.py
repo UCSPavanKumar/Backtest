@@ -8,12 +8,13 @@ class OrderManagement(ConfigUpdate):
                            is_async = False,
                            log_path='')
 
-    def prepareOrder(self,**kwargs):
+    def prepareOrder(self,*args,**kwargs):
+        print(kwargs)
         """Prepare dict for bullish and bearish entry,SL,target order"""
         data = {
                     "symbol":kwargs['symbol'],
                     "qty":kwargs['qty'],
-                    "type":kwargs['type'],
+                    "type":kwargs['otype'],
                     "side":kwargs['side'],
                     "productType":"INTRADAY",
                     "limitPrice":kwargs['limit_price'],
@@ -35,6 +36,11 @@ class OrderManagement(ConfigUpdate):
         """Fetching all pending orders in trading account"""
         orders = self.fyers.orderbook()
         return orders
+
+    def fetchCurrentTrades(self):
+        """Fetching all trades"""
+        trades = self.fyers.tradebook()
+        return trades
 
     def cancelAllPendingOrders(self):
         """Cancellation of all Pending Orders"""

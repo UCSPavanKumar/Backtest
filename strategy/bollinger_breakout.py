@@ -3,11 +3,13 @@ import sys
 import pandas as pd
 import numpy as np
 sys.path.insert(1,r'D:/Projects/Backtest')
+from time_management.dates import back_test_dates
 from data_management.historical_data import HistoricalData
 
 class BollingerBreakout(HistoricalData):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,year):
+        self.year = year
+        super().__init__(year)
 
     def bollinger_bands(self,df:pd.DataFrame):
         """
@@ -49,7 +51,7 @@ class BollingerBreakout(HistoricalData):
         return result
 
 
-    def runStrategy(self,dates,resolution,symbol):
+    def runStrategy(self,symbol):
         """
         1. Checking for first 5 min candle of day with prev day close
         2. Day's Pct change over previous day candle
@@ -62,80 +64,16 @@ class BollingerBreakout(HistoricalData):
         dfs = []
         result = []
         data_list = []
-        for row in dates:
-                try:
-                    from_date = row.split('|')[0]
-                    to_date   = row.split('|')[1]
-                    data      = HistoricalData().fetch_historical_data(symbol,from_date,to_date,resolution)
-                    data['symbol'] = symbol
-                    data['dt_format'] = data['date'].dt.strftime('%Y%m%d')
-                    dfs.append(data)
-                except Exception as e:
-                    continue
-
-        if len(dfs)>0:
-
-                hist_data = pd.concat(dfs)
-                dates = hist_data['dt_format'].unique()
-                dates.sort()
-                hist_data['vol_sma'] = hist_data['volume'].rolling(window=20).mean()
-                hist_data = self.bollinger_bands(hist_data)
-                hist_data = self.rsi(hist_data)
-                for i in range(3,len(dates)):
-                    h_data = hist_data[hist_data['dt_format']==dates[i]]
-                    p_data = hist_data[hist_data['dt_format']==dates[i-1]]
-                    data_list = []
-                    nr3_df = hist_data[(hist_data['dt_format']==dates[(i-3):(i)][0]) | (hist_data['dt_format']==dates[(i-3):i][1]) | (hist_data['dt_format']==dates[(i-3):i][2])]
-                    #print(dates[i],nr3_df['high'].max(),nr3_df['low'].min())
-                    res                 = self.nr3(hist_data,dates[(i-3):i])
-                    first_candle_volume = float(h_data.iloc[0].volume)
-                    first_candle_close = float(h_data.iloc[0].close)
-                    first_candle_high   = float(h_data.iloc[0].high)
-                    first_candle_low    = float(h_data.iloc[0].low)
-                    vol_sma             = float(h_data.iloc[0].vol_sma)
-                    day_high            = h_data[1:len(h_data)]['high'].max()
-                    day_low             = h_data[1:len(h_data)]['low'].min()
-                    candle_diff         = float(h_data.iloc[0].close) - float(h_data.iloc[0].open)
-                    rate                = round(float(first_candle_volume)/float(vol_sma),2)
-                    #dt                  = hist_data.iloc[75*i].date.strftime('%Y%m%d')
-                    prev_day_close      = float(p_data.iloc[len(p_data)-1].close)
-                    pct                 = round((float(h_data.iloc[0].close) - float(prev_day_close) )/float(prev_day_close),2)*100
-                    closing_candle      = float(h_data.iloc[len(h_data)-1].close)
-                    closing_pct         = round((float(closing_candle) - float(prev_day_close) )/float(prev_day_close),2)*100
-                    ub                  = float(h_data.iloc[0].UB)
-                    lb                  = float(h_data.iloc[0].LB)
-                    rsi                 = float(h_data.iloc[0].rsi)
-
-                    if (pct>0 and candle_diff>0)  and rate>6 and day_high>first_candle_high and first_candle_close>nr3_df['high'].max():
-                        data_list.append(symbol)
-                        data_list.append(first_candle_volume)
-                        data_list.append(vol_sma)
-                        data_list.append(rate)
-                        data_list.append(dates[i])
-                        data_list.append(prev_day_close)
-                        data_list.append(pct)
-                        data_list.append(closing_pct)
-                        data_list.append(ub)
-                        data_list.append(lb)
-                        data_list.append(rsi)
-                        data_list.append(res)
-                        result.append(data_list)
-                    elif (pct<0 and candle_diff<0)  and rate>6 and day_low<first_candle_low and first_candle_close<nr3_df['low'].min() :
-                        data_list.append(symbol)
-                        data_list.append(first_candle_volume)
-                        data_list.append(vol_sma)
-                        data_list.append(rate)
-                        data_list.append(dates[i])
-                        data_list.append(prev_day_close)
-                        data_list.append(pct)
-                        data_list.append(closing_pct)
-                        data_list.append(ub)
-                        data_list.append(lb)
-                        data_list.append(rsi)
-                        data_list.append(res)
-                        result.append(data_list)
-                    else:
-                         pass
+        data      = HistoricalData(self.year).fetch_data_by_year(symbol)
+        data['symbol'] = symbol
+        data['dt_format'] = data['date'].dt.strftime('%Y%m%d')
+        if len(data)>0:
+            hist_data = data
+            dates = hist_data['dt_format'].unique()
+            dates.sort()
+            hist_data['vol_sma'] = hist_data['volume'].rolling(window=20).mean()
+            hist_data = self.bollinger_bands(hist_data)
+            hist_data = self.rsi(hist_data)
+            return hist_data
         else:
              pass
-        return result

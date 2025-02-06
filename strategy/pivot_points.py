@@ -5,7 +5,6 @@ from datetime import datetime,timedelta
 from pandas.errors import SettingWithCopyWarning
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
-sys.path.insert(1,r'D:/Projects/Backtest')
 from analytics.analytics import Analytics
 from constants import constants
 from core.login import TradeLogin
@@ -26,9 +25,9 @@ import matplotlib.pyplot as plt
 from indicators.stock_indicators import Indicators
 pd.set_option('display.max_columns', None)
 import numpy as np
-trade = TradeLogin()
-trade.login()
-trades = []
+#trade = TradeLogin()
+#trade.login()
+#trades = []
 
 
 processes = []
@@ -53,7 +52,7 @@ class PivotPoint:
 
     def buy(self,final_df,symbol):
         dates = final_df['dt_time'].unique()
-        dates.sort()
+        #dates.sort()
         target = 0
         sl=0
         for i in range(0,len(dates)-1):
@@ -84,7 +83,7 @@ class PivotPoint:
             3. RSI is
         """
         dates = final_df['dt_time'].unique()
-        dates.sort()
+        #dates.sort()
         target = 0
         sl=0
         for i in range(0,len(dates)-1):
@@ -111,7 +110,6 @@ class PivotPoint:
 
     def run(self,symbol):
         dfs = []
-        print('Processing symbol: {0}'.format(symbol))
         for dates in intraday_dates:
             data = HistoricalData(year=self.year).fetch_historical_data(symbol,dates.split('|')[0],dates.split('|')[1],'5')
             if data is not None and len(data)>20:     
@@ -121,7 +119,7 @@ class PivotPoint:
         if len(dfs)>0:
             final_df = pd.concat(dfs)
             dates = final_df['dt_time'].unique()
-            dates.sort()
+            #dates.sort()
             final_df = Indicators().rsi(final_df)
             final_df['vol_smav'] = final_df['volume'].rolling(window=20).mean()
             self.buy(final_df,symbol)

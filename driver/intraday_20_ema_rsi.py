@@ -44,6 +44,7 @@ if __name__ == '__main__':
         symbols.sort()
         for symbol in symbols:
             futures.append(executor.submit(EmaRsi(2025).runStrategy, symbol))
+            time.sleep(0.2)  
         for future in as_completed(futures):
             if future.result() is not None:
                 dfs.append(future.result())

@@ -1,5 +1,6 @@
 from fyers_apiv3 import fyersModel
 import sys
+import time
 from collections import deque
 from datetime import datetime,timedelta
 import warnings
@@ -57,6 +58,7 @@ class HistoricalData(ConfigUpdate):
             }
             try:
                 response = fyers.history(data=data)
+                time.sleep(0.3)
                 df = pd.DataFrame(response['candles'])
                 df.columns = ['date','open','high','low','close','volume']
                 df['date'] = pd.to_datetime(df['date'],unit='s')
@@ -78,11 +80,11 @@ class HistoricalData(ConfigUpdate):
                     dfs.append(temp_df)
                 except Exception as e:
                     print(str(e))
-            if len(dfs)>0:
-                final_df = pd.concat(dfs)
-                return final_df
-            else:
-                return None
+        if len(dfs)>0:
+            final_df = pd.concat(dfs)
+            return final_df
+        else:
+            return None
 
 
     def fetch_historical_data(self,symbol,date_from,date_to,resolution):
