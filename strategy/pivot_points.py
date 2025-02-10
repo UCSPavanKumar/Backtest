@@ -67,7 +67,7 @@ class PivotPoint:
             first_candle_volume = df['volume'].iloc[0]
             pct = ((first_candle_close-prev_df['close'].iloc[-1])/prev_df['close'].iloc[-1])*100
             rate = first_candle_volume/df['vol_smav'].iloc[0]
-            if (first_candle_close>first_candle_open) and (first_candle_close > r1) and (first_candle_close - r1)>0  and day_high>first_candle_high and rate>4  and df['rsi'].iloc[0]>60 and df['rsi'].iloc[0]<70:
+            if (first_candle_close>first_candle_open) and (first_candle_close > r1) and (first_candle_close - r1)>0  and rate>4  and df['rsi'].iloc[0]>60 and df['rsi'].iloc[0]<70:
                 sl = round((first_candle_high*(1-stoploss))*20)/20
                 qty = int((capital*risk_per_trade)/abs(first_candle_high-sl))
                 target =round((first_candle_high+float((2*(first_candle_high-sl))))*20)/20
@@ -99,10 +99,10 @@ class PivotPoint:
             first_candle_volume = df['volume'].iloc[0]
             pct = ((first_candle_close-prev_df['close'].iloc[-1])/prev_df['close'].iloc[-1])*100
             rate = first_candle_volume/df['vol_smav'].iloc[0]
-            if (first_candle_close<first_candle_open) and (first_candle_close < s1) and (first_candle_close - s1)<0  and day_low>first_candle_low and rate>4  and df['rsi'].iloc[0]>20 and df['rsi'].iloc[0]<30:
-                sl = round((first_candle_high*(1+stoploss))*20)/20
+            if (first_candle_close<first_candle_open) and (first_candle_close < s1) and (first_candle_close - s1)<0  and rate>4  and df['rsi'].iloc[0]>20 and df['rsi'].iloc[0]<30:
+                sl = round((first_candle_low*(1+stoploss))*20)/20
                 qty = int((capital*risk_per_trade)/abs(first_candle_low-sl))
-                target =round((first_candle_high+float((2*(sl-first_candle_low))))*20)/20     
+                target =round((first_candle_low+float((2*(sl-first_candle_low))))*20)/20     
                 self.trades.append([symbol,dates[i+1],round(first_candle_low*20)/20,'BEARISH',qty,target,sl])
             else:
                 pass

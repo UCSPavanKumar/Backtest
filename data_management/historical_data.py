@@ -50,10 +50,10 @@ class HistoricalData(ConfigUpdate):
             date_to = dt.split('|')[1]
             data = {
                 "symbol":symbol,
-                "resolution": '5',
+                "resolution": 'D',
                 "date_format": "1",
-                "range_from": date_from.format(self.year),
-                "range_to": date_to.format(self.year),
+                "range_from": datetime.strptime(date_from.format(self.year),'YYYY-MM-DD'),
+                "range_to": datetime.strptime(date_to.format(self.year),'YYYY-MM-DD'),
                 "cont_flag": "1"
             }
             try:
@@ -136,4 +136,4 @@ class HistoricalData(ConfigUpdate):
         except Exception as e:
             return None
            
-            
+#

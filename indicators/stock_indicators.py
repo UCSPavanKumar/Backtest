@@ -44,3 +44,6 @@ class Indicators:
         df['rsi'] = 100-(100/(1+(np.where(df['avg_gain'].ne(None),df['avg_gain']/df['avg_loss'],0))))
         df['rsi'] = round(df['rsi'],2)
         return df
+
+    def supertrend(self,df,period,multiplier):
+        pass

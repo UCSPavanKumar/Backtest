@@ -2,7 +2,7 @@
 
 
 processes = []
-
+import time
 
 
 
@@ -15,8 +15,9 @@ def place_counter_order(order_ids):
         while len(order_ids)>0:
             for i in range(len(list(order_ids.keys()))):
                 response = order.getOrderBookById(list(order_ids.keys())[i])
+                print(response)
                 if response['s']=='ok':
-                    data = response['orderbook'][0]
+                    data = response['orderBook'][0]
                     if data['status'] == 2 :
                         response = order.placeMultiOrder(data=order_ids[list(order_ids.keys())[i]])
                         if response['s'] == 'ok':
@@ -25,6 +26,7 @@ def place_counter_order(order_ids):
                             print('Target and SL order placement error: %s'%response['message'])
                 else:
                     print(response['message'])
+            time.sleep(0.5)
 
 def fyers_order(trade_df):
     """Preparing entry,sl,target order for execution of strategy
@@ -40,17 +42,21 @@ def fyers_order(trade_df):
         order = OrderManagement()
         order_ids = {}
         order_df = pd.DataFrame(order.fetchPendingOrders()['orderBook'])
-        if len(order_df[order_df['status']==6])== 0:
+        if len(order_df)>0:
+            order_df = order_df[(order_df['orderTag']=='intradaypivot') && (order_df['status']==6)]
+        else:
+            pass
+        if len(order_df)== 0:
             for i in range(len(trade_df)):
                 if trade_df.iloc[i].pattern =='BULLISH':
                     entry_keywords = {
                     "symbol":trade_df.iloc[i].symbol,
                     "qty":trade_df.iloc[i].qty,
-                    "type":2,
+                    "type":3,
                     "side":1,
                     "productType":"INTRADAY",
                     "limitPrice":0,
-                    "stopPrice":0,#trade_df.iloc[i].entry,
+                    "stopPrice":trade_df.iloc[i].entry,
                     "validity":"DAY",
                     "disclosedQty":0,
                     "offlineOrder":False,
@@ -75,8 +81,8 @@ def fyers_order(trade_df):
                     "type":1,
                     "side":-1,
                     "productType":"INTRADAY",
-                    "limitPrice":0,
-                    "stopPrice":trade_df.iloc[i].target,
+                    "limitPrice":trade_df.iloc[i].target,
+                    "stopPrice":0,
                     "validity":"DAY",
                     "disclosedQty":0,
                     "offlineOrder":False,
@@ -86,11 +92,11 @@ def fyers_order(trade_df):
                     entry_keywords = {
                     "symbol":trade_df.iloc[i].symbol,
                     "qty":trade_df.iloc[i].qty,
-                    "type":2,
+                    "type":3,
                     "side":-1,
                     "productType":"INTRADAY",
                     "limitPrice":0,
-                    "stopPrice":0,#trade_df.iloc[i].entry,
+                    "stopPrice":trade_df.iloc[i].entry,
                     "validity":"DAY",
                     "disclosedQty":0,
                     "offlineOrder":False,
@@ -115,8 +121,8 @@ def fyers_order(trade_df):
                     "type":1,
                     "side":1,
                     "productType":"INTRADAY",
-                    "limitPrice":0,
-                    "stopPrice":trade_df.iloc[i].target,
+                    "limitPrice":trade_df.iloc[i].target,
+                    "stopPrice":0,
                     "validity":"DAY",
                     "disclosedQty":0,
                     "offlineOrder":False,
@@ -130,21 +136,25 @@ def fyers_order(trade_df):
                     response['message']
                 place_counter_order(order_ids) 
         else:
-            if len(order_ids.keys())>0: 
-                print(len(order_ids.keys()))
-                while True:
-                    for i in range(len(order_ids.keys())):
-                        response = order.getOrderBookById(order_ids.keys()[i])
+            print(order_ids)
+            order_keys = list(order_df['id'].unique())
+            if len(order_keys)>0:
+                print(len(order_keys))
+                while len(order_ids_keys)>0:
+                    for i in range(len(order_keys)):
+                        response = order.getOrderBookById(orderkeys[i])
+                        print(response)
                         if response['s']=='ok':
                             data = response['orderbook'][0]
                             if data['status'] == 2 :
-                                response = order.placeMultiOrder(data=order_ids[order_ids.keys()[i]])
+                                response = order.placeMultiOrder(data=order_ids[orderkeys[i]])
                                 if response['s'] == 'ok':
-                                    order_ids.pop(order_ids.keys()[i])
+                                    order_ids.pop(orderkeys[i])
                                 else:
                                     print('Target and SL order placement error: %s'%response['message'])
                         else:
                             print(response['message'])
+                    time.sleep(0.5)
 
 
 if __name__ == '__main__':
@@ -193,7 +203,8 @@ if __name__ == '__main__':
     with ProcessPoolExecutor(max_workers=2) as executor:
         futures = []
         for symbol in symbols:
-            futures.append(executor.submit(PivotPoint(1000,2025).run, symbol))
+            print('processing symbol:',symbol)
+            futures.append(executor.submit(PivotPoint(10000,2025).run, symbol))
             time.sleep(0.5)
 
         for future in as_completed(futures):

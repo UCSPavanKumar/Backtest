@@ -33,10 +33,9 @@ trade = TradeLogin()
 trade.login()
 trades = []
 dfs = []
-for symbol in ['NSE:ADANIGREEN-EQ']:#constants.nifty_50_symbols:
+for symbol in constants.nifty_50_symbols:
     data = BollingerBreakout(2024).runStrategy(symbol) 
-    print(data)
-
+    data.to_csv('./analysis/'+symbol+'.csv')
 
 
 
