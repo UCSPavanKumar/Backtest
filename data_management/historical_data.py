@@ -97,6 +97,7 @@ class HistoricalData(ConfigUpdate):
 
 
         """
+        print(f'processing symbol, {symbol}')
         fyers = fyersModel.FyersModel(client_id=self.retrieveClientId(),
                                       token=self.retrieveAccessToken(),
                                       is_async=False,
@@ -116,6 +117,7 @@ class HistoricalData(ConfigUpdate):
             df['date'] = pd.to_datetime(df['date'],unit='s')
             df.sort_values(by=['date'])
             df['dt_time'] = df['date'].dt.strftime('%Y-%m-%d')
+            df['symbol'] = symbol
             dates = df['dt_time'].unique()
             dates.sort()
             dfs = []
@@ -123,11 +125,7 @@ class HistoricalData(ConfigUpdate):
                 try:
                     temp_df = df[df['dt_time']==dt]
                     len_df = len(temp_df)
-                    if len_df>75:
-                        temp_df = temp_df.loc[75:149]
-                        temp_df['date']= self.get_dates_index(dt,75)
-                    else:
-                        temp_df['date']= self.get_dates_index(dt,len_df)
+                    temp_df.index = self.get_dates_index(dt,len_df)
                     dfs.append(temp_df)
                 except Exception as e:
                     print(str(e))

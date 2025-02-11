@@ -11,7 +11,7 @@ if __name__ == '__main__':
     from pandas.errors import SettingWithCopyWarning
     warnings.simplefilter(action='ignore', category=FutureWarning)
     warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
-    sys.path.insert(1,r'D:/Projects/Backtest')
+    sys.path.insert(1,r'/home/ec2-user/Backtest/')
     from constants import constants
     from strategy.pivot_points import PivotPoint
     from core.login import TradeLogin
@@ -30,20 +30,22 @@ if __name__ == '__main__':
     import numpy as np
     trade = TradeLogin()
     trade.login()
+    import time
     trades = []
+    from cls_s3 import cls_s3
 
 
 
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         futures = []
-        for year in range(2019,2025):
-            for symbol in constants.nifty_50_symbols:
-                futures.append(executor.submit(HistoricalData(year).fetch_data_by_year, symbol))
-            for future in as_completed(futures):
-                trades.append(future.result())
+        for symbol in constants.nifty_50_symbols:
+            c = cls_s3()
+            df = c.getObject(symbol,'algowiztrades','Day_minus_one_1_min')
+            print(df.head())
+            time.sleep(0.3)
 
-            trade_df = pd.concat(trades)
-            trade_df.to_csv('./data/nifty_50_{0}.csv'.format(year))
+    
+
 
 
 
