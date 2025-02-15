@@ -43,7 +43,7 @@ def fyers_order(trade_df):
         order_ids = {}
         order_df = pd.DataFrame(order.fetchPendingOrders()['orderBook'])
         if len(order_df)>0:
-            order_df = order_df[(order_df['orderTag']=='intradaypivot') && (order_df['status']==6)]
+            order_df = order_df[(order_df['orderTag']=='intradaypivot') & (order_df['status']==6)]
         else:
             pass
         if len(order_df)== 0:
@@ -129,12 +129,15 @@ def fyers_order(trade_df):
                     "orderTag":"intradaypivot"
                 }
                 response = order.placeSingleOrder(data=entry_keywords)
-                print(response)
-                if response['s']=='ok':
-                    order_ids[response['id']] = [sl_keywords,exit_keywords]
+                order_data[trade_iloc[i].symbol] = {}
+                order_data[trade_df.iloc[i].symbol]['entry'] = entry_keywords
+                order_data[trade_df.iloc[i].symbol]['sl'] = sl_keywords
+                order_data[trade_df.iloc[i].symbol]['target'] = exit_keywords
+                if response['s'] =='ok':
+                    order_data[trade_df.iloc[i].symbol]['entry_order_flg'] = 'Y'
                 else:
-                    response['message']
-                place_counter_order(order_ids) 
+                    order_data[trade_df.iloc[i].symbol]['entry_order_flg'] = 'N'
+                order.createOrder(order_data)
         else:
             print(order_ids)
             order_keys = list(order_df['id'].unique())
@@ -203,9 +206,8 @@ if __name__ == '__main__':
     with ProcessPoolExecutor(max_workers=2) as executor:
         futures = []
         for symbol in symbols:
-            print('processing symbol:',symbol)
             futures.append(executor.submit(PivotPoint(10000,2025).run, symbol))
-            time.sleep(0.5)
+            time.sleep(0.3)
 
         for future in as_completed(futures):
             if future.result() is not None:

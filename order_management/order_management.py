@@ -51,6 +51,8 @@ class OrderManagement(ConfigUpdate):
         trades = self.fyers.tradebook()
         return trades
 
+    def createOrder(self,json_data):
+        pass
 
     def fetchCurrentOverallPositions(self):
         """Fetch Running P&L"""

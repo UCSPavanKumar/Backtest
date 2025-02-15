@@ -39,9 +39,11 @@ if __name__ == '__main__':
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
         futures = []
         for symbol in constants.nifty_50_symbols:
+            df = HistoricalData(2025).fetch_historical_data(symbol,'2025-02-12','2025-02-12','1')
             c = cls_s3()
-            df = c.getObject(symbol,'algowiztrades','Day_minus_one_1_min')
-            print(df.head())
+            c.saveObject(df,'algowiztrades','Day_minus_one_1_min')
+            #df = c.getObject(symbol,'algowiztrades','Day_minus_one_1_min')
+            #print(df.head())
             time.sleep(0.3)
 
     
