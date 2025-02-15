@@ -3,12 +3,14 @@ import yaml
 from config.config_update import ConfigUpdate
 import requests
 import pyotp
+import json
 from urllib import parse
 import time
 from urllib.parse import parse_qs,urlparse
-
+import sys
 class TradeLogin(ConfigUpdate):
-	def __init__(self):
+	
+    def __init__(self):
         self.login_config = None
         self.ERROR = "error"
         self.SUCCESS = "success"
@@ -19,11 +21,11 @@ class TradeLogin(ConfigUpdate):
         self.URL_VERIFY_PIN = self.BASE_URl + '/verify_pin'
         self.URL_TOKEN  = self.BASE_URL_2+ '/token'
         self.URL_VALIDATION_AUTH_CODE = self.BASE_URL_2 + '/validate-authcode'
-		with open('./config/config.yaml') as stream:
-			try:
-				self.login_config = yaml.safe_load(stream)
-			except yaml.YAMLError as exc:
-				print(exc)
+        with open('./config/config.yaml') as stream:
+            try:
+                self.login_config = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                 print(exc)
 
     def send_login_otp(self,fyers_id,app_id):
         try:
@@ -47,7 +49,7 @@ class TradeLogin(ConfigUpdate):
         try:
             payload = {
                     "request_key":request_key,
-                    "identity_type":"pin":
+                    "identity_type":"pin",
                     "identifier":self.login_config['pin']
                     }
             result_string = requests.post(url=self.URL_VERIFY_PIN,json=payload)
@@ -58,6 +60,8 @@ class TradeLogin(ConfigUpdate):
             access_token = result['data']['access_token']
 
             return [self.SUCCESS, access_token]
+        except Exception as e:
+             return [self.ERROR,str(e)]
 
     def token(self,fyers_id,app_id,redirect_uri,app_type,access_token):
         try:
@@ -80,7 +84,7 @@ class TradeLogin(ConfigUpdate):
                 return [self.ERROR,result_string.text]
             result = json.loads(result_string.text)
             url = result['Url']
-            auth_code = parse.parse_qs(parse.urlparse(url).query)['auth_code')[0]
+            auth_code = parse.parse_qs(parse.urlparse(url).query)['auth_code'][0]
 
             return [self.SUCCESS,auth_code]
         except Exception as e:
@@ -140,7 +144,7 @@ class TradeLogin(ConfigUpdate):
                 break
 
             if verify_totp_result[0]==self.SUCCESS:
-                request_key_2 = verify_topt_result[1]
+                request_key_2 = verify_totp_result[1]
 
                 #verify pin and send back access token
 
@@ -184,36 +188,30 @@ class TradeLogin(ConfigUpdate):
                 access_token = response['access_token']
                 print(access_token)
 
-
-
-
-
-
-
     def login(self):
-		"""Creation of session for authentication"""
-		self.session = fyersModel.SessionModel(
+        """Creation of session for authentication"""
+        self.session = fyersModel.SessionModel(
 						client_id=self.login_config['client_id'],
 						secret_key=self.login_config['secret_key'],
 						redirect_uri=self.login_config['redirect_uri'],
 						response_type=self.login_config['response_type']
 		)
-		if self.login_config['auth_code'] is not None and self.login_config['access_token'] is None :
-			self.session = fyersModel.SessionModel(
+        if self.login_config['auth_code'] is not None and self.login_config['access_token'] is None :
+            self.session = fyersModel.SessionModel(
 						client_id=self.login_config['client_id'],
 						secret_key=self.login_config['secret_key'],
 						redirect_uri=self.login_config['redirect_uri'],
 						response_type=self.login_config['response_type'],
 						grant_type=self.login_config['grant_type']
 		)
-			self.session.set_token(self.login_config['auth_code'])
-			response = self.session.generate_token()
-			self.access_token = response['access_token']
-			ConfigUpdate().updateAccessToken(response['access_token'])
-		elif self.login_config['access_token'] is not None:
-			return self.login_config['access_token']
-		else:
-			response = self.session.generate_authcode()
-			print(response)
+            self.session.set_token(self.login_config['auth_code'])
+            response = self.session.generate_token()
+            self.access_token = response['access_token']
+            ConfigUpdate().updateAccessToken(response['access_token'])
+        elif self.login_config['access_token'] is not None:
+            return self.login_config['access_token']
+        else:
+            response = self.session.generate_authcode()
+            print(response)
 
 	
